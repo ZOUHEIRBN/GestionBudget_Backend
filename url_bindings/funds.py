@@ -30,7 +30,8 @@ def deserialize_one(fund):
 def fund_cr():
     if request.method == 'GET':
         fund_list = [serialize(m) for m in database['funds'].aggregate([
-            {"$group": {"_id": "$date", "entries": {"$push": "$$ROOT"}}},
+            {"$group": {"_id": { "$dateToString": {"format": "%Y-%m-%d", "date": "$date" } },
+                        "entries": {"$push": "$$ROOT"}}},
             {
                 "$sort": {"_id": -1}
             }
