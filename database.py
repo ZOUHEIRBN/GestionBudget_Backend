@@ -10,4 +10,12 @@ from url_bindings.users import hash_password
 #                         "entries": {"$push": "$$ROOT"}}},
 # database['users'].insert_one({'username': 'ZouheirBN', 'password': hash_password('zouheir6')})
 f = database['funds'].find({})
-print([e for e in f])
+
+
+for i in range(1, 32):
+    database['funds'].update_many({'date': '2021-01-{:02}T00:00:00.000Z'.format(i)},
+                              {'$set': {'date': datetime.strptime(f"{i}/01/2021", "%d/%m/%Y")}})
+
+print(sorted({x['date'] for x in f if 'datetime' in str(type(x['date']))}))
+
+
