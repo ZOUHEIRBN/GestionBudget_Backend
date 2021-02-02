@@ -84,4 +84,6 @@ def getByDate():
             "$sort": {"_id": -1}
         }
     ])]
+
     return {'funds': fund_list}
+
