@@ -13,15 +13,21 @@ def hash_password(w):
     return hash_object.hexdigest()
 
 
-def serialize(u):
+def serialize(u, num_actions=5):
     u['id'] = str(u['_id'])
     del u['_id']
+    u['actions'] = [a for a in database['actions'].find({'actor_id': u['id']}, {'_id': 0, 'actor_id': 0})]
+    if num_actions != 0:
+        u['actions'] = u['actions'][-num_actions:][::-1]
+
     return u
 
 
 def deserialize(u):
+    del u['actions']
     u['_id'] = ObjectId(u['id'])
     del u['id']
+
     return u
 
 
@@ -29,7 +35,7 @@ def deserialize(u):
 def user_cr_auth():
     if request.method == 'GET':
         user_list = [serialize(m) for m in database['users'].find({}, {'password': 0})]
-        return {'users': user_list}
+        return {'users': user_list*10}
 
     elif request.method == 'PUT':
         request_json = request.get_json()
@@ -39,6 +45,10 @@ def user_cr_auth():
 
         if 'password' in request_json.keys():
             request_json['password'] = hash_password(request_json['password'])
+
+        for f in ['firstname', 'lastname', 'email']:
+            if f in request_json.keys():
+                request_json[f] = request_json[f].lower()
 
         user = database['users'].find_one(
             request_json, {'password': 0}
@@ -56,6 +66,10 @@ def user_cr_auth():
 
         if 'password' in request_json.keys():
             request_json['password'] = hash_password(request_json['password'])
+
+        for f in ['firstname', 'lastname', 'email']:
+            if f in request_json.keys():
+                request_json[f] = request_json[f].lower()
 
         database['users'].insert_one(request_json)
         print(request_json)
