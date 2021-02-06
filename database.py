@@ -48,12 +48,12 @@ from url_bindings.users import hash_password
 #                                                 })
 #     print(f"Fund (ID:{fid}) -> {random_city}")
 
-funds_siege = [x['_id'] for x in database['funds'].find({'city': 'Oriental'})]
+funds_siege = [x['_id'] for x in database['funds'].find({'city': 'Sud'})]
 
 print(len(funds_siege), funds_siege)
 
 
-# database['users'].update_one({'username': 'zouheirbn'}, {'$push':
-#                                                              {
-#                                                                 "roles": {'name': 'Oriental', 'type': 'city'}
-#                                                              }})
+database['users'].update_one({'username': 'zouheirbn'}, {'$push':
+                                                             {
+                                                                "roles": {'name': 'Sud', 'type': 'city'}
+                                                             }})

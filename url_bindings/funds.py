@@ -93,7 +93,7 @@ def getByDate():
     cities = request.args.getlist('cities')
     print(cities)
     req_json = request.args
-    fmt = "%a %b %d %Y %H:%M:%S GMT 0100 (GMT 01:00)"
+    fmt = "%a %b %d %Y"
     fund_list = [serialize_one(m) for m in database['funds'].aggregate([
         {
             "$match": {"date": {
