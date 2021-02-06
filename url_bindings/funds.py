@@ -29,7 +29,8 @@ def fund_cr():
                 "$match": {"date": {
                     "$gte": datetime.strptime(f"1/1/2020", "%d/%m/%Y"),
                     "$lte": datetime.strptime(f"1/1/2022", "%d/%m/%Y")
-                }}
+                },
+                }
             },
             {
                 "$sort": {"_id": -1}
@@ -89,6 +90,8 @@ def fund_ud(id):
 @app.route(funds_namespace+'/byDate', methods=['GET'])
 def getByDate():
     actor_id = request.args['actor_id']
+    cities = request.args.getlist('cities')
+    print(cities)
     req_json = request.args
     fmt = "%a %b %d %Y %H:%M:%S GMT 0100 (GMT 01:00)"
     fund_list = [serialize_one(m) for m in database['funds'].aggregate([
@@ -96,7 +99,11 @@ def getByDate():
             "$match": {"date": {
                 "$gte": datetime.strptime(req_json['from'], fmt),
                 "$lte": datetime.strptime(req_json['to'], fmt)
-            }}
+            },
+                "city": {"$in": cities}
+            }
+
+
         },
         {
             "$sort": {"date": -1}

@@ -35,24 +35,26 @@ def deserialize(u):
 def user_cr_auth():
     if request.method == 'GET':
         user_list = [serialize(m) for m in database['users'].find({}, {'password': 0})]
-        return {'users': user_list*10}
+        return {'users': user_list}
 
     elif request.method == 'PUT':
         request_json = request.get_json()
-
+        search = {}
+        print(search)
         if 'username' in request_json.keys():
-            request_json['username'] = request_json['username'].lower()
+            search['username'] = request_json['username'].lower()
 
         if 'password' in request_json.keys():
-            request_json['password'] = hash_password(request_json['password'])
+            search['password'] = hash_password(request_json['password'])
 
         for f in ['firstname', 'lastname', 'email']:
             if f in request_json.keys():
-                request_json[f] = request_json[f].lower()
+                search[f] = request_json[f].lower()
 
         user = database['users'].find_one(
-            request_json, {'password': 0}
+            search, {'password': 0}
         )
+        print(user)
         if user is None:
             return {'user': None}
 
