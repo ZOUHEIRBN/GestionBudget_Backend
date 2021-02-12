@@ -40,7 +40,7 @@ def user_cr_auth():
     elif request.method == 'PUT':
         request_json = request.get_json()
         search = {}
-        print(search)
+
         if 'username' in request_json.keys():
             search['username'] = request_json['username'].lower()
 
@@ -51,6 +51,7 @@ def user_cr_auth():
             if f in request_json.keys():
                 search[f] = request_json[f].lower()
 
+        print(search)
         user = database['users'].find_one(
             search, {'password': 0}
         )

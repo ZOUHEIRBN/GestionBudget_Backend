@@ -88,7 +88,7 @@ def fund_ud(id):
 
 
 @app.route(funds_namespace+'/byDate', methods=['GET'])
-def getByDate():
+def fund_getByDate():
     actor_id = request.args['actor_id']
     cities = request.args.getlist('cities')
     print(cities)

@@ -33,9 +33,8 @@ from url_bindings.users import hash_password
 #     print(a)
 
 
-# database['users'].update_many({'username': 'zouheirbn'}, {'$set': {'roles': [{'name': 'Siège', 'type': 'city'}, {'name': 'Directeur régional', 'type': 'rank'}]}})
-
-# print(list(database['users'].find({})))
+# database['users'].update_many({'username': 'AstDR'}, {'$set': {'username': 'astdr'}})
+# print(list(database['users'].find({'lastname': 'rdinateur'})))
 
 
 # funds = [x['_id'] for x in database['funds'].find({})]
@@ -47,13 +46,13 @@ from url_bindings.users import hash_password
 #                                                     {'city': random_city}
 #                                                 })
 #     print(f"Fund (ID:{fid}) -> {random_city}")
+#
+funds_siege = [x['date'] for x in database['charges'].find({})]
 
-funds_siege = [x['_id'] for x in database['funds'].find({'city': 'Sud'})]
-
-print(len(funds_siege), funds_siege)
-
-
-database['users'].update_one({'username': 'zouheirbn'}, {'$push':
-                                                             {
-                                                                "roles": {'name': 'Sud', 'type': 'city'}
-                                                             }})
+print(funds_siege)
+#
+#
+# database['users'].update_one({'username': 'zouheirbn'}, {'$push':
+#                                                              {
+#                                                                 "roles": {'name': 'Sud', 'type': 'city'}
+#                                                              }})
