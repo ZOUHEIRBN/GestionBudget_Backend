@@ -12,6 +12,6 @@ SERVER_URL = 'http://localhost:3000'
 app = Flask(__name__, template_folder='./templates', static_folder='./static')
 
 CORS(app)
-socket = SocketIO(app, cors_allowed_origins="*")
+socket_io = SocketIO(app, cors_allowed_origins="*")
 
-from url_bindings import markets, funds, users, charges
+from url_bindings import markets, funds, users, charges, socket

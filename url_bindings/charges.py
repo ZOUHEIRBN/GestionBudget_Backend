@@ -67,7 +67,7 @@ def charge_ud(id):
                                       {'$set': modif}
                                       )
         database['charges'].update_many({'_id': new_charge['_id']},
-                                      {'$set': {"date": datetime.fromisoformat(new_charge['date'][:-1].replace('T', ' '))}}
+                                      {'$set': {"date": datetime.strptime(new_charge['date'], "%a %b %d %Y")}}
                                       )
 
         log = LogAction(actor_id, 'PUT')

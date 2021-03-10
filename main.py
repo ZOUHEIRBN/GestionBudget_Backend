@@ -1,4 +1,4 @@
-from bindings import app, socket
+from bindings import app, socket_io
 
 #./env/scripts/python.exe main.py
 #!mongod
@@ -6,4 +6,4 @@ from bindings import app, socket
 #!rq worker
 
 if __name__ == '__main__':
-    socket.run(app, port=3000)
+    socket_io.run(app, port=3000)

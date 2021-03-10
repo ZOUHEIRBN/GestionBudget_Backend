@@ -4,6 +4,7 @@ from bson import ObjectId
 from flask import request
 
 from bindings import app, database
+from url_bindings import socket
 
 users_namespace = '/users'
 
@@ -51,15 +52,16 @@ def user_cr_auth():
             if f in request_json.keys():
                 search[f] = request_json[f].lower()
 
-        print(search)
+        # print(search)
         user = database['users'].find_one(
             search, {'password': 0}
         )
-        print(user)
+
         if user is None:
             return {'user': None}
+        user = serialize(user)
 
-        return {'user': serialize(user)}
+        return {'user': user}
 
     elif request.method == 'POST':
         request_json = request.get_json()
@@ -77,3 +79,23 @@ def user_cr_auth():
         database['users'].insert_one(request_json)
         print(request_json)
         return serialize(request_json)
+
+
+def get_roles(user_id):
+    if user_id == 'undefined':
+        return []
+    roles = [r for r in database['users'].find_one({'_id': ObjectId(user_id)}, {'roles': 1})['roles']]
+    userlist = database['users'].aggregate([
+        {
+            "$match": {
+                "roles": {"$in": roles}
+            }
+        }
+    ])
+    userlist = [str(u['_id']) for u in userlist]
+    userlist.remove(user_id)
+    return userlist
+
+def get_full_name(user_id):
+    user = database['users'].find_one({'_id': ObjectId(user_id)})
+    return user.get('firstname', '').title() + ' ' + user.get('lastname', '').upper()

@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from url_bindings.socket import notify
+from url_bindings.users import get_roles, get_full_name
 from bindings import database
 
 actions = database['actions']
@@ -17,6 +19,13 @@ class LogAction:
             'timestamp': self.timestamp
         })
         self.id = new_action.inserted_id
+
+        #Notify clients
+        clients = get_roles(self.actor_id)
+        print(clients)
+        for client in clients:
+            notify(f"{get_full_name(self.actor_id)} has {self.action.lower()}", client)
+
         return self
 
     def make_statement(self, entity_type, operation_type, single_element=True, entity_id=None, additional_text=None):
