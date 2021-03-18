@@ -1,5 +1,8 @@
 from datetime import datetime
 from random import choice
+
+from bson import ObjectId
+
 from bindings import database
 from url_bindings.users import hash_password
 # for i in range(21, 28):
@@ -47,12 +50,76 @@ from url_bindings.users import hash_password
 #                                                 })
 #     print(f"Fund (ID:{fid}) -> {random_city}")
 #
-funds_siege = [x['date'] for x in database['charges'].find({})]
-
-print(funds_siege)
+# funds_siege = [x['date'] for x in database['charges'].find({})]
+#
+# print(funds_siege)
 #
 #
 # database['users'].update_one({'username': 'zouheirbn'}, {'$push':
 #                                                              {
 #                                                                 "roles": {'name': 'Sud', 'type': 'city'}
 #                                                              }})
+
+
+"""
+aa = database['actions'].aggregate([
+    {"$match": {
+        "actor_id": {"$ne": 'undefined'},
+    }},
+
+    {"$project": {
+      "actor_id": {
+        "$toObjectId": "$actor_id"
+      },
+        'action': 1,
+        'timestamp': 1,
+        'entity_type': 1,
+        'operation_type': 1
+    }},
+
+    {"$lookup": {
+        "from": "users",
+        "localField": "actor_id",
+        "foreignField": "_id",
+        "as": "actor"
+    }},
+    {"$replaceRoot": {
+        "newRoot": {
+            "$mergeObjects": [{"$arrayElemAt": ["$actor", -1]}, "$$ROOT"]
+        }
+    }},
+    {"$project": {'password': 0, 'actor': 0, 'actor_id': 0}},
+    {"$match": {
+        "operation_type": {"$in": ['PUT']},
+        "$and": [
+            {"$and": [{
+                "roles.name": {"$in": ['Siège', 'Sud']}
+            }, {
+                "roles.type": 'city'
+            }]},
+            {"$and": [{
+                "roles.name": {"$in": ['Directeur régional']}
+            }, {
+                "roles.type": 'rank'
+            }]}
+        ]
+
+        # "actions": {"$in": ['charge']},
+    }}
+])
+for a in aa:
+    for k, v in a.items():
+        print(f"{k}:\t{v}")
+
+    break
+"""
+
+
+
+database['actions'].update_many({'operation_type': "Consultation"}, {"$set":
+{'operation_type': "Liste"}
+                                                         })
+
+o = [x['operation_type'] for x in database['actions'].find()]
+print(o)
+

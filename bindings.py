@@ -15,3 +15,4 @@ CORS(app)
 socket_io = SocketIO(app, cors_allowed_origins="*")
 
 from url_bindings import markets, funds, users, charges, socket
+from reporting import reporting

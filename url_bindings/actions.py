@@ -1,11 +1,18 @@
 from datetime import datetime
 
+from bson import ObjectId
+
 from url_bindings.socket import notify
 from url_bindings.users import get_roles, get_full_name
 from bindings import database
 
 actions = database['actions']
-
+OPERATIONS = {
+    "GET": "Consultation",
+    "POST": "Ajout",
+    "PUT": "Modification",
+    "DELETE": "Suppression"
+}
 class LogAction:
     def __init__(self, actor_id, action, timestamp=datetime.now()):
         self.actor_id = actor_id
@@ -16,6 +23,8 @@ class LogAction:
         new_action = actions.insert_one({
             'actor_id': self.actor_id,
             'action': self.action,
+            'entity_type': self.entity_type,
+            'operation_type': self.operation_type,
             'timestamp': self.timestamp
         })
         self.id = new_action.inserted_id
@@ -48,4 +57,29 @@ class LogAction:
 
         if additional_text is not None:
             self.action = self.action + " " + str(additional_text)
+
+        if operation_type == 'GET' and not single_element:
+            self.operation_type = "Liste"
+        else:
+            self.operation_type = OPERATIONS[operation_type]
+        self.entity_type = entity_type
         return self
+
+
+def serialize(a):
+    try:
+        actor = database['users'].find_one({'_id': ObjectId(a['actor_id'])})
+
+        a['firstname'] = actor['firstname']
+        a['lastname'] = actor['lastname']
+        a['roles'] = actor['roles']
+    except:
+        a['firstname'] = ''
+        a['lastname'] = ''
+        a['roles'] = []
+
+    a['id'] = str(a['_id'])
+    del a['_id']
+
+    a['timestamp'] = a['timestamp'].strftime('%a %b %d %Y')
+    return a

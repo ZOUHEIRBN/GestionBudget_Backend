@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask import request
 
 from bindings import socket_io
@@ -19,7 +21,12 @@ def connect(user):
     u = user['user']
     ONLINE_USERS[u.get('id', '')] = request.sid
     for c in ONLINE_USERS.keys():
-        notify(f"{u['firstname'].title()} {u['lastname'].upper()} has connected", c)
+        n = {
+            "sender": u.get('id', 0),
+            "timestamp": datetime.now().strftime("%a, %b %d %Y"),
+            "text": f"{u['firstname'].title()} {u['lastname'].upper()} has connected"
+        }
+        notify(n, c)
 
 
 def notify(notification, client):

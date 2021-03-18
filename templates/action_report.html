@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <!--<link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">-->
+</head>
+<body>
+    <h1>Rapport des opérations</h1>
+    <ul>
+        {% if 'from' in request_dict.keys() %}
+            <li>Depuis {{ request_dict['from'] }}</li>
+        {% endif %}
+    </ul>
+    {% for action in actions %}
+        <div class="element-container">
+
+            <time class="timestamp">{{ action['timestamp'] }}</time>
+            <h2 class="title">
+                {{ action['firstname'] }} {{ action['lastname'] }}
+            </h2>
+            <div class="chips">
+                {% for chip in action['roles'] %}
+                    <span class="{{ chip['type'] + ' chip' }}">
+                        {{ chip['name'] }}
+                    </span>
+                {% endfor %}
+            </div>
+            <p>{{ action['action'] }}</p>
+            <span class="identifier">{{ action['id'] }}</span>
+
+        </div>
+    {% endfor %}
+</body>
+</html>

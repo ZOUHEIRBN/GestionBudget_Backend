@@ -1,0 +1,44 @@
+*{
+    margin: 0 auto;
+    font-family: "Helvetica", "Roboto", sans-serif;
+}
+.element-container{
+    display: block;
+    background-color: transparent;
+    padding: 15px;
+    border-radius: 30px;
+    margin: 7px 0;
+    box-shadow: 5px 5px 10px -5px black;
+    position: relative;
+    min-height: 200px;
+}
+.timestamp{
+    font-size: 12pt;
+}
+.title{
+    margin: 0px;
+}
+.identifier{
+    position: absolute;
+    bottom: 0;
+    margin: 6pt 0;
+        font-size: x-small;
+    color: grey;
+}
+.chips{
+    display: flex;
+}
+.chip{
+    background: blue;
+    margin: 3pt;
+    font-size: small;
+    padding: 3pt 13pt;
+    border-radius: 30pt;
+    color: white;
+}
+.chip.city{
+    background: purple;
+}
+.chip.rank{
+    background: crimson;
+}
