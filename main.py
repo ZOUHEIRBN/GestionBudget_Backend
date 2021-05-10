@@ -6,4 +6,4 @@ from bindings import app, socket_io
 #!rq worker
 
 if __name__ == '__main__':
-    socket_io.run(app, port=3000)
+    socket_io.run(app, port=3000, host='0.0.0.0')

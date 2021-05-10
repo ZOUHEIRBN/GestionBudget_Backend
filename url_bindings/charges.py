@@ -12,7 +12,7 @@ charge_namespace = '/charges'
 def serialize_one(charge):
     charge['id'] = str(charge['_id'])
     del charge['_id']
-
+    print(f"'{charge['id']}',", end=' ')
     return charge
 
 def deserialize_one(charge):
@@ -20,25 +20,26 @@ def deserialize_one(charge):
     del charge['id']
     return charge
 
+def fetch_privileges(actor_id):
+    return ['view', 'list', 'edit', 'add', 'delete']
+
 @app.route(charge_namespace, methods=['GET', 'POST'])
 def charge_cr():
     actor_id = request.args['actor_id']
     if request.method == 'GET':
         charge_list = [serialize_one(m) for m in database['charges'].aggregate([
-            {
-                "$match": {"date": {
-                    "$gte": datetime.strptime(f"1/1/2020", "%d/%m/%Y"),
-                    "$lte": datetime.strptime(f"1/1/2022", "%d/%m/%Y")
-                },
-                }
-            },
+            # {
+            #     "$match": {"date": {
+            #         "$gte": datetime.strptime(f"1/1/2020", "%d/%m/%Y"),
+            #         "$lte": datetime.strptime(f"1/1/2022", "%d/%m/%Y")
+            #     },
+            #     }
+            # },
             {
                 "$sort": {"_id": -1}
             }
         ])]
-
-
-        return {'charges': charge_list}
+        return {'charges': charge_list, 'privileges': fetch_privileges(actor_id)}
 
     elif request.method == 'POST':
         new_charge = request.get_json()

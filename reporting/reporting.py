@@ -75,6 +75,9 @@ def generate_actions_report():
 
 
     actions = database['actions'].aggregate([
+        {"$match": {
+            "actor_id": {"$ne": "undefined"}
+        }},
         {"$project": {
           "actor_id": {
             "$toObjectId": "$actor_id"
@@ -118,7 +121,16 @@ def generate_actions_report():
 
     return response
 
-
+# def generateSummaryReport():
+#     os.system("cls")
+#     request_dict = {}
+#
+#     request_json = json.loads(request.args['query_data'])
+#     for k, v in request_json.items():
+#         request_dict[k] = [REPLACEMENTS.get(x, x) for x in v.keys() if v[x]]
+#
+#     print(request_dict, '\n')
+#     return
 
 def convertToPDF(template):
     # pdf = pdfkit.from_string(template, "test.pdf", css="static/styles.css")

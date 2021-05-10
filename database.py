@@ -116,10 +116,92 @@ for a in aa:
 
 
 
-database['actions'].update_many({'operation_type': "Consultation"}, {"$set":
-{'operation_type': "Liste"}
-                                                         })
+# database['actions'].update_many({'operation_type': "Consultation"}, {"$set":
+# {'operation_type': "Liste"}
+#                                                          })
+#
+# o = [x['operation_type'] for x in database['actions'].find()]
+# print(o)
 
-o = [x['operation_type'] for x in database['actions'].find()]
-print(o)
 
+
+# expense = {
+#     "expense_type": "personal_charges",
+#     "date": datetime.strptime("22/01/2021", "%d/%m/%Y"),
+#     "beneficient": ObjectId('5ffa335adf09d518d9636cfd'),
+#     "engaged_amount": 700,
+#     "paid_amount": 700,
+#     "objective": "Location d'une maison",
+#     "phase": 1
+# }
+
+# p = database['expenses'].aggregate([
+#     {"$lookup": {
+#         "from": "users",
+#         "localField": "beneficient",
+#         "foreignField": "_id",
+#         "as": "user"
+#     }},
+#     {"$replaceRoot": {
+#         "newRoot": {
+#             "$mergeObjects": [{"$arrayElemAt": ["$user", -1]}, "$$ROOT"]
+#         }
+#     }},
+#     {"$project": {
+#         "password": 0,
+#         "user": 0,
+#     }}
+# ])
+
+"""
+p = database['expenses'].aggregate([
+            {"$lookup": {
+                "from": "users",
+                "localField": "beneficient",
+                "foreignField": "_id",
+                "as": "user"
+            }},
+            {"$project": {
+                "username": 0,
+                "firstname": 0,
+                "lastname": 0
+            }},
+            {"$replaceRoot": {
+                "newRoot": {
+                    "$mergeObjects": [{"$arrayElemAt": ["$user", -1]}, "$$ROOT"]
+                }
+            }},
+            {"$project": {
+                "password": 0,
+                "user": 0,
+                "roles": 0
+            }},
+            {"$sort": {
+                "_id": -1
+            }}
+        ])
+
+
+for pp in database['funds'].find():
+    print(pp)
+"""
+
+# database['users'].insert_one({"firstname":"Super","lastname":"User",
+#                               "roles":[{"name":"Sud","type":"city"},{"name":"Centrale","type":"rank"},{"name":"Oriental","type":"city"}],"username":"superuser", "password": hash_password('superuser')})
+
+uus = database['users'].aggregate([
+    {"$project": {
+        "roles.name": 1,
+        "_id": {
+            "$toObjectId": "$actor_id"
+        }
+    }},
+    {"$replaceRoot": {
+                "newRoot": {
+                    "$mergeObjects": "$roles.name"
+                }
+            }}
+])
+for u in uus:
+    print(u)
+    break

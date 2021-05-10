@@ -30,7 +30,7 @@ def connect(user):
 
 
 def notify(notification, client):
-    print(ONLINE_USERS)
-    print("Client SID: ", ONLINE_USERS.get(client, ''))
+    # print(ONLINE_USERS)
+    # print("Client SID: ", ONLINE_USERS.get(client, ''))
     socket_io.emit("notification", notification, room=ONLINE_USERS.get(client, ''))
-    print()
+    # print()

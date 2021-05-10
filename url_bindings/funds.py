@@ -25,13 +25,13 @@ def fund_cr():
     actor_id = request.args['actor_id']
     if request.method == 'GET':
         fund_list = [serialize_one(m) for m in database['funds'].aggregate([
-            {
-                "$match": {"date": {
-                    "$gte": datetime.strptime(f"1/1/2020", "%d/%m/%Y"),
-                    "$lte": datetime.strptime(f"1/1/2022", "%d/%m/%Y")
-                },
-                }
-            },
+            # {
+            #     "$match": {"date": {
+            #         "$gte": datetime.strptime(f"1/1/1970", "%d/%m/%Y"),
+            #         "$lte": datetime.strptime(f"1/1/2022", "%d/%m/%Y")
+            #     },
+            #     }
+            # },
             {
                 "$sort": {"_id": -1}
             }
@@ -42,6 +42,8 @@ def fund_cr():
 
     elif request.method == 'POST':
         new_fund = request.get_json()
+        new_fund['date'] = datetime.strptime(new_fund['date'], "%a %b %d %Y")
+
         operation = database['funds'].insert_one(new_fund)
         new_fund['id'] = str(operation.inserted_id)
         log = LogAction(actor_id, 'POST')
@@ -94,16 +96,19 @@ def fund_getByDate():
     print(cities)
     req_json = request.args
     fmt = "%a %b %d %Y"
-    fund_list = [serialize_one(m) for m in database['funds'].aggregate([
-        {
-            "$match": {"date": {
+    match_dict = {"date": {
                 "$gte": datetime.strptime(req_json['from'], fmt),
                 "$lte": datetime.strptime(req_json['to'], fmt)
             },
                 "city": {"$in": cities}
-            }
+    }
+    if req_json['budget_type'] != '':
+        match_dict['budget_type'] = req_json['budget_type']
 
 
+    fund_list = [serialize_one(m) for m in database['funds'].aggregate([
+        {
+            "$match": match_dict
         },
         {
             "$sort": {"date": -1}

@@ -31,7 +31,6 @@ class LogAction:
 
         #Notify clients
         clients = get_roles(self.actor_id)
-        print(clients)
         for client in clients:
             notify(f"{get_full_name(self.actor_id)} has {self.action.lower()}", client)
 
