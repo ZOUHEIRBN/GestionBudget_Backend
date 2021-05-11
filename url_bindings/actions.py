@@ -14,10 +14,14 @@ OPERATIONS = {
     "DELETE": "Suppression"
 }
 class LogAction:
-    def __init__(self, actor_id, action, timestamp=datetime.now()):
+    def __init__(self, actor_id, action, timestamp=datetime.now(), operation_type=None, entity_type=None, entity_id=None):
         self.actor_id = actor_id
         self.action = action
         self.timestamp = timestamp
+
+        self.operation_type = operation_type
+        self.entity_type = entity_type
+        self.entity_id = entity_id
 
     def insert(self):
         new_action = actions.insert_one({
@@ -25,7 +29,8 @@ class LogAction:
             'action': self.action,
             'entity_type': self.entity_type,
             'operation_type': self.operation_type,
-            'timestamp': self.timestamp
+            'timestamp': self.timestamp,
+            'entity_id': self.entity_id
         })
         self.id = new_action.inserted_id
 
@@ -61,7 +66,12 @@ class LogAction:
             self.operation_type = "Liste"
         else:
             self.operation_type = OPERATIONS[operation_type]
+
         self.entity_type = entity_type
+
+        if entity_id is not None:
+            self.entity_id = entity_id
+
         return self
 
 

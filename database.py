@@ -189,19 +189,5 @@ for pp in database['funds'].find():
 # database['users'].insert_one({"firstname":"Super","lastname":"User",
 #                               "roles":[{"name":"Sud","type":"city"},{"name":"Centrale","type":"rank"},{"name":"Oriental","type":"city"}],"username":"superuser", "password": hash_password('superuser')})
 
-uus = database['users'].aggregate([
-    {"$project": {
-        "roles.name": 1,
-        "_id": {
-            "$toObjectId": "$actor_id"
-        }
-    }},
-    {"$replaceRoot": {
-                "newRoot": {
-                    "$mergeObjects": "$roles.name"
-                }
-            }}
-])
-for u in uus:
-    print(u)
-    break
+
+

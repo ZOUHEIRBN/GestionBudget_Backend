@@ -4,30 +4,30 @@ from bson import ObjectId
 from flask import request
 
 from bindings import app, database
+from helper import *
 from url_bindings.actions import LogAction
 
 charge_namespace = '/charges'
 
 
-def serialize_one(charge):
+def serialize_one(charge, actor_id):
     charge['id'] = str(charge['_id'])
     del charge['_id']
-    print(f"'{charge['id']}',", end=' ')
-    return charge
+
+    return set_privileges(charge, actor_id)
 
 def deserialize_one(charge):
     charge['_id'] = ObjectId(charge['id'])
     del charge['id']
     return charge
 
-def fetch_privileges(actor_id):
-    return ['view', 'list', 'edit', 'add', 'delete']
+
 
 @app.route(charge_namespace, methods=['GET', 'POST'])
 def charge_cr():
     actor_id = request.args['actor_id']
     if request.method == 'GET':
-        charge_list = [serialize_one(m) for m in database['charges'].aggregate([
+        charge_list = [serialize_one(m, actor_id) for m in database['charges'].aggregate([
             # {
             #     "$match": {"date": {
             #         "$gte": datetime.strptime(f"1/1/2020", "%d/%m/%Y"),
@@ -39,7 +39,7 @@ def charge_cr():
                 "$sort": {"_id": -1}
             }
         ])]
-        return {'charges': charge_list, 'privileges': fetch_privileges(actor_id)}
+        return {'charges': charge_list}
 
     elif request.method == 'POST':
         new_charge = request.get_json()
@@ -96,7 +96,7 @@ def charge_getByDate():
 
     req_json = request.args
     fmt = "%a %b %d %Y"
-    charge_list = [serialize_one(m) for m in database['charges'].aggregate([
+    charge_list = [serialize_one(m, actor_id) for m in database['charges'].aggregate([
         {
             "$match": {"date": {
                 "$gte": datetime.strptime(req_json['from'], fmt),
@@ -115,5 +115,5 @@ def charge_getByDate():
     log.make_statement('charge', 'GET', single_element=False, additional_text=f"from {req_json['from']} to {req_json['to']}")
     log.insert()
 
-    return {'charges': charge_list}
+    return {'charges': charge_list, 'privileges': PRIVILEGES}
 
