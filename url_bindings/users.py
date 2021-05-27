@@ -56,7 +56,7 @@ def user_cr():
                 request_json[f] = request_json[f].lower()
 
         database['users'].insert_one(request_json)
-        print(request_json)
+
         return serialize(request_json)
 
 @app.route(users_namespace+'/connect', methods=['PUT'])
@@ -84,12 +84,7 @@ def authenticate():
         if user is None:
             return {'user': None}
         user = serialize(user)
-
-        # connection_action = actions.LogAction(user.get('id', ''), operation_type='Connexion')
-        # connection_action.make_connection_statement('Connected')
-        # connection_action.insert()
-
-
+        user['ip'] = request_json['ip']
 
         return {'user': user}
 

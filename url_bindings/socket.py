@@ -11,7 +11,7 @@ ONLINE_USERS = {}
 def disconnect(user):
     u = user['user']
     try:
-        connection_action = actions.LogAction(u.get('id', ''), operation_type='Déconnexion')
+        connection_action = actions.LogAction(u.get('id', ''), operation_type='Déconnexion', actor_ip=u.get('ip', None))
         connection_action.make_connection_statement('Disconnected')
         connection_action.insert()
 
@@ -26,9 +26,10 @@ def disconnect(user):
 @socket_io.on('connected')
 def connect(user):
     u = user['user']
+    print(u.keys())
     ONLINE_USERS[u.get('id', '')] = {"sid": request.sid}
 
-    connection_action = actions.LogAction(u.get('id', ''), operation_type='Connexion')
+    connection_action = actions.LogAction(u.get('id', ''), operation_type='Connexion', actor_ip=u.get('ip', None))
     connection_action.make_connection_statement('Connected')
     connection_action.insert()
 

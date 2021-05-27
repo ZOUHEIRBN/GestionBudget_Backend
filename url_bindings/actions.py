@@ -14,7 +14,7 @@ OPERATIONS = {
     "DELETE": "Suppression"
 }
 class LogAction:
-    def __init__(self, actor_id, action="", timestamp=datetime.now(), operation_type=None, entity_type=None, entity_id=None):
+    def __init__(self, actor_id, action="", timestamp=datetime.now(), operation_type=None, entity_type=None, entity_id=None, actor_ip=None):
         self.actor_id = actor_id
         self.action = action
         self.timestamp = timestamp
@@ -23,6 +23,8 @@ class LogAction:
         self.entity_type = entity_type
         self.entity_id = entity_id
 
+        self.actor_ip = actor_ip
+
     def insert(self):
         new_action = actions.insert_one({
             'actor_id': self.actor_id,
@@ -30,7 +32,8 @@ class LogAction:
             'entity_type': self.entity_type,
             'operation_type': self.operation_type,
             'timestamp': self.timestamp,
-            'entity_id': self.entity_id
+            'entity_id': self.entity_id,
+            'actor_ip': self.actor_ip,
         })
         self.id = new_action.inserted_id
 
@@ -75,16 +78,16 @@ class LogAction:
         return self
 
 # class ConnectionAction(LogAction):
-    def make_connection_statement(self, operation_type, actor_ip=None):
+    def make_connection_statement(self, operation_type):
         if operation_type.upper() == "CONNECTED":
             self.action = f"Connected on {self.timestamp}"
-            if actor_ip is not None:
-                self.action = self.action + f" from ip {actor_ip}"
+            if self.actor_ip is not None:
+                self.action = self.action + f" from IP address: {self.actor_ip}"
 
         elif operation_type.upper() == "DISCONNECTED":
             self.action = f"Disconnected on {self.timestamp}"
-            if actor_ip is not None:
-                self.action = self.action + f" from ip {actor_ip}"
+            if self.actor_ip is not None:
+                self.action = self.action + f" from IP address: {self.actor_ip}"
 
 
 
