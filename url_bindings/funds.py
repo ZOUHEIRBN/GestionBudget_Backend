@@ -4,16 +4,17 @@ from bson import ObjectId
 from flask import request
 
 from bindings import app, database
+from helper import set_privileges
 from url_bindings.actions import LogAction
 
 funds_namespace = '/funds'
 
 
-def serialize_one(fund):
+def serialize_one(fund, actor_id):
     fund['id'] = str(fund['_id'])
     del fund['_id']
 
-    return fund
+    return set_privileges(fund, actor_id)
 
 def deserialize_one(fund):
     fund['_id'] = ObjectId(fund['id'])
@@ -24,7 +25,7 @@ def deserialize_one(fund):
 def fund_cr():
     actor_id = request.args['actor_id']
     if request.method == 'GET':
-        fund_list = [serialize_one(m) for m in database['funds'].aggregate([
+        fund_list = [serialize_one(m, actor_id) for m in database['funds'].aggregate([
             # {
             #     "$match": {"date": {
             #         "$gte": datetime.strptime(f"1/1/1970", "%d/%m/%Y"),
@@ -49,7 +50,7 @@ def fund_cr():
         log = LogAction(actor_id, 'POST')
         log.make_statement('fund', 'POST', entity_id=new_fund['id'])
         log.insert()
-        return serialize_one(new_fund)
+        return serialize_one(new_fund, actor_id)
 
 @app.route(funds_namespace + '/<id>', methods=['PUT', 'DELETE', 'GET'])
 def fund_ud(id):
@@ -58,7 +59,7 @@ def fund_ud(id):
         log = LogAction(actor_id, 'GET')
         log.make_statement('fund', 'GET', entity_id=id)
         log.insert()
-        return serialize_one(database['funds'].find_one({'_id': ObjectId(id)}))
+        return serialize_one(database['funds'].find_one({'_id': ObjectId(id)}), actor_id)
 
     elif request.method == 'PUT':
         new_fund = deserialize_one(request.get_json())
@@ -74,7 +75,7 @@ def fund_ud(id):
         log = LogAction(actor_id, 'PUT')
         log.make_statement('fund', 'PUT', entity_id=id)
         log.insert()
-        return serialize_one(new_fund)
+        return serialize_one(new_fund, actor_id)
 
     elif request.method == 'DELETE':
         print(id)
@@ -86,7 +87,7 @@ def fund_ud(id):
         log.make_statement('fund', 'DELETE', entity_id=id)
         log.insert()
 
-        return serialize_one(deleted)
+        return serialize_one(deleted, actor_id)
 
 
 @app.route(funds_namespace+'/byDate', methods=['GET'])
@@ -106,7 +107,7 @@ def fund_getByDate():
         match_dict['budget_type'] = req_json['budget_type']
 
 
-    fund_list = [serialize_one(m) for m in database['funds'].aggregate([
+    fund_list = [serialize_one(m, actor_id) for m in database['funds'].aggregate([
         {
             "$match": match_dict
         },

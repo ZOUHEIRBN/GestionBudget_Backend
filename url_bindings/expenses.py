@@ -4,6 +4,7 @@ from bson import ObjectId
 from flask import request
 
 from bindings import app, database
+from helper import set_privileges
 from url_bindings.actions import LogAction
 
 expense_namespace = '/expenses'
@@ -28,7 +29,7 @@ EXPENSE_TYPES = {
       "Carburant": "fuel",
       "Réparation du matériel": "maintenance",
   }
-def serialize_one(expense):
+def serialize_one(expense, actor_id):
     REVERSE_EXPENSE_TYPES = {v: k for k, v in EXPENSE_TYPES.items()}
     expense['expense_type'] = REVERSE_EXPENSE_TYPES.get(expense['expense_type'], expense['expense_type'])
     expense['beneficient'] = str(expense['beneficient'])
@@ -37,7 +38,7 @@ def serialize_one(expense):
 
     expense['id'] = str(expense['_id'])
     del expense['_id']
-    return expense
+    return set_privileges(expense, actor_id)
 
 def deserialize_one(expense):
     expense['expense_type'] = EXPENSE_TYPES.get(expense['expense_type'], expense['expense_type'])
@@ -55,7 +56,7 @@ def fetch_privileges(actor_id):
 def expense_cr():
     actor_id = request.args['actor_id']
     if request.method == 'GET':
-        expense_list = [serialize_one(m) for m in database['expenses'].aggregate([
+        expense_list = [serialize_one(m, actor_id) for m in database['expenses'].aggregate([
             {"$lookup": {
                 "from": "users",
                 "localField": "beneficient",
@@ -94,7 +95,7 @@ def expense_cr():
         log = LogAction(actor_id, 'POST')
         log.make_statement('expense', 'POST', entity_id=new_expense['id'])
         log.insert()
-        return serialize_one(new_expense)
+        return serialize_one(new_expense, actor_id)
 
 @app.route(expense_namespace + '/<id>', methods=['PUT', 'DELETE', 'GET'])
 def expense_ud(id):
@@ -103,7 +104,7 @@ def expense_ud(id):
         log = LogAction(actor_id, 'GET')
         log.make_statement('expense', 'GET', entity_id=id)
         log.insert()
-        return serialize_one(database['expenses'].find_one({'_id': ObjectId(id)}))
+        return serialize_one(database['expenses'].find_one({'_id': ObjectId(id)}), actor_id)
 
     elif request.method == 'PUT':
         print(request.get_json())
@@ -120,7 +121,7 @@ def expense_ud(id):
         log = LogAction(actor_id, 'PUT')
         log.make_statement('expense', 'PUT', entity_id=id)
         log.insert()
-        return serialize_one(new_expense)
+        return serialize_one(new_expense, actor_id)
 
     elif request.method == 'DELETE':
         print(id)
@@ -132,4 +133,4 @@ def expense_ud(id):
         log.make_statement('expense', 'DELETE', entity_id=id)
         log.insert()
 
-        return serialize_one(deleted)
+        return serialize_one(deleted, actor_id)

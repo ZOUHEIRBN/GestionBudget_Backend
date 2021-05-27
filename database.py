@@ -4,6 +4,7 @@ from random import choice
 from bson import ObjectId
 
 from bindings import database
+from helper import *
 from url_bindings.users import hash_password
 # for i in range(21, 28):
 #     database['funds'].update_many({'date': f'{i}/12/2020'},
@@ -60,7 +61,6 @@ from url_bindings.users import hash_password
 #                                                                 "roles": {'name': 'Sud', 'type': 'city'}
 #                                                              }})
 
-
 """
 aa = database['actions'].aggregate([
     {"$match": {
@@ -113,8 +113,6 @@ for a in aa:
 
     break
 """
-
-
 
 # database['actions'].update_many({'operation_type': "Consultation"}, {"$set":
 # {'operation_type': "Liste"}
@@ -190,4 +188,56 @@ for pp in database['funds'].find():
 #                               "roles":[{"name":"Sud","type":"city"},{"name":"Centrale","type":"rank"},{"name":"Oriental","type":"city"}],"username":"superuser", "password": hash_password('superuser')})
 
 
+# print((list(database['actions'].find({"entity_id": {"$exists": 1}}))))
 
+
+# uuuu = database['users'].aggregate([
+#     {"$project": {
+#         "rolename": {
+#             "$map": {
+#                 "input": "$roles.name",
+#                 "as": "r",
+#                 "in": {
+#                     "primaryGroup": {
+#                         "$filter": {
+#                             "input": "$roles",
+#                             "as": "rr",
+#                             "cond": {"$eq": ["$$rr.type", "city"]}
+#                         }
+#                     },
+#                 }
+#             }
+#         }
+#     }},
+#     {"$project": {
+#         "cities": "$rolename.primaryGroup.name"
+#     }},
+#     {"$unwind": "$cities"}
+# ])
+# for u in uuuu:
+#     print(u)
+
+
+# entity_type = "market"
+# entity_city = "Sud"
+#
+# rr = generate_role_grid(entity_type, entity_city)
+# df = pd.DataFrame(rr)
+# print(df)
+# # df.to_csv('roles.csv')
+
+# ENTITY_TYPES = ['market']
+# data = {}
+# for entity_type in ENTITY_TYPES:
+#     for city in sorted(ALL_CITIES):
+#         roles = {}
+#         for role in sorted(ALL_ROLES):
+#             for entity_city in sorted(ALL_CITIES):
+#                 r = is_role_eligible(entity_type, {role}, entity_city, {city})
+#                 roles[role+"_"+entity_city] = r
+#         data[entity_type+"_"+city] = roles
+#
+# print(pd.DataFrame(data))
+# # pd.DataFrame(data).to_csv('access_rights.csv')
+
+print({c['operation_type'] for c in database['actions'].find()})

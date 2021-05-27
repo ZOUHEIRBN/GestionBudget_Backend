@@ -2,14 +2,15 @@ from bson import ObjectId
 from flask import request
 
 from bindings import app, database
+from helper import set_privileges
 from url_bindings.actions import LogAction
 
 market_namespace = '/markets'
 
-def serialize(market):
+def serialize(market, actor_id):
     market['id'] = str(market['_id'])
     del market['_id']
-    return market
+    return set_privileges(market, actor_id, entity_type='market')
 
 def deserialize(market):
     market['_id'] = ObjectId(market['id'])
@@ -20,7 +21,7 @@ def deserialize(market):
 def market_cr():
     actor_id = request.args['actor_id']
     if request.method == 'GET':
-        market_list = [serialize(m) for m in database['markets'].find({})]
+        market_list = [serialize(m, actor_id) for m in database['markets'].find({})]
         log = LogAction(actor_id, 'GET')
         log.make_statement('market', 'GET', single_element=False)
         log.insert()
@@ -33,7 +34,7 @@ def market_cr():
         log = LogAction(actor_id, 'POST')
         log.make_statement('market', 'POST', entity_id=new_market['id'])
         log.insert()
-        return serialize(new_market)
+        return serialize(new_market, actor_id)
 
 @app.route(market_namespace+'/<id>', methods=['GET', 'DELETE', 'PUT'])
 def market_ud(id):
@@ -50,7 +51,7 @@ def market_ud(id):
         log = LogAction(actor_id, 'PUT')
         log.make_statement('market', 'PUT', entity_id=id)
         log.insert()
-        return serialize(new_market)
+        return serialize(new_market, actor_id)
 
     elif request.method == 'DELETE':
         deleted = database['markets'].find_one({'_id': ObjectId(id)})
@@ -58,4 +59,4 @@ def market_ud(id):
         log = LogAction(actor_id, 'DELETE')
         log.make_statement('market', 'DELETE', entity_id=id)
         log.insert()
-        return serialize(deleted)
+        return serialize(deleted, actor_id)

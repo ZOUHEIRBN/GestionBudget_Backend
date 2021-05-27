@@ -4,7 +4,8 @@ from bson import ObjectId
 from flask import request
 
 from bindings import app, database
-from url_bindings import socket
+from helper import set_privileges
+from url_bindings import socket, actions
 
 users_namespace = '/users'
 
@@ -14,14 +15,16 @@ def hash_password(w):
     return hash_object.hexdigest()
 
 
-def serialize(u, num_actions=5):
+def serialize(u, actor_id=None, num_actions=5):
     u['id'] = str(u['_id'])
     del u['_id']
     u['actions'] = [a for a in database['actions'].find({'actor_id': u['id']}, {'_id': 0, 'actor_id': 0})]
     if num_actions != 0:
         u['actions'] = u['actions'][-num_actions:][::-1]
 
-    return u
+    if actor_id is None:
+        return u
+    return set_privileges(u, actor_id)
 
 
 def deserialize(u):
@@ -33,12 +36,33 @@ def deserialize(u):
 
 
 @app.route(users_namespace, methods=['GET', 'POST', 'PUT'])
-def user_cr_auth():
+def user_cr():
+    actor_id = request.args['actor_id']
     if request.method == 'GET':
-        user_list = [serialize(m) for m in database['users'].find({}, {'password': 0})]
+        user_list = [serialize(m, actor_id) for m in database['users'].find({}, {'password': 0})]
         return {'users': user_list}
 
-    elif request.method == 'PUT':
+    elif request.method == 'POST':
+        request_json = request.get_json()
+
+        if 'username' in request_json.keys():
+            request_json['username'] = request_json['username'].lower()
+
+        if 'password' in request_json.keys():
+            request_json['password'] = hash_password(request_json['password'])
+
+        for f in ['firstname', 'lastname', 'email']:
+            if f in request_json.keys():
+                request_json[f] = request_json[f].lower()
+
+        database['users'].insert_one(request_json)
+        print(request_json)
+        return serialize(request_json)
+
+@app.route(users_namespace+'/connect', methods=['PUT'])
+def authenticate():
+    # actor_id = request.args.get('actor_id', '1234567890AB'*2)
+    if request.method == 'PUT':
         request_json = request.get_json()
         search = {}
 
@@ -61,25 +85,13 @@ def user_cr_auth():
             return {'user': None}
         user = serialize(user)
 
+        # connection_action = actions.LogAction(user.get('id', ''), operation_type='Connexion')
+        # connection_action.make_connection_statement('Connected')
+        # connection_action.insert()
+
+
+
         return {'user': user}
-
-    elif request.method == 'POST':
-        request_json = request.get_json()
-
-        if 'username' in request_json.keys():
-            request_json['username'] = request_json['username'].lower()
-
-        if 'password' in request_json.keys():
-            request_json['password'] = hash_password(request_json['password'])
-
-        for f in ['firstname', 'lastname', 'email']:
-            if f in request_json.keys():
-                request_json[f] = request_json[f].lower()
-
-        database['users'].insert_one(request_json)
-        print(request_json)
-        return serialize(request_json)
-
 
 def get_roles(user_id):
     if user_id == 'undefined':
@@ -99,3 +111,4 @@ def get_roles(user_id):
 def get_full_name(user_id):
     user = database['users'].find_one({'_id': ObjectId(user_id)})
     return user.get('firstname', '').title() + ' ' + user.get('lastname', '').upper()
+

@@ -14,7 +14,7 @@ OPERATIONS = {
     "DELETE": "Suppression"
 }
 class LogAction:
-    def __init__(self, actor_id, action, timestamp=datetime.now(), operation_type=None, entity_type=None, entity_id=None):
+    def __init__(self, actor_id, action="", timestamp=datetime.now(), operation_type=None, entity_type=None, entity_id=None):
         self.actor_id = actor_id
         self.action = action
         self.timestamp = timestamp
@@ -73,6 +73,22 @@ class LogAction:
             self.entity_id = entity_id
 
         return self
+
+# class ConnectionAction(LogAction):
+    def make_connection_statement(self, operation_type, actor_ip=None):
+        if operation_type.upper() == "CONNECTED":
+            self.action = f"Connected on {self.timestamp}"
+            if actor_ip is not None:
+                self.action = self.action + f" from ip {actor_ip}"
+
+        elif operation_type.upper() == "DISCONNECTED":
+            self.action = f"Disconnected on {self.timestamp}"
+            if actor_ip is not None:
+                self.action = self.action + f" from ip {actor_ip}"
+
+
+
+
 
 
 def serialize(a):
