@@ -2,7 +2,7 @@ from datetime import datetime
 import hashlib
 from bson import ObjectId
 from flask import request
-
+import pandas as pd
 from bindings import app, database
 from helper import set_privileges
 from url_bindings import socket, actions
@@ -87,6 +87,18 @@ def authenticate():
         user['ip'] = request_json['ip']
 
         return {'user': user}
+
+@app.route(users_namespace+'/from_xl', methods=['POST'])
+def upload_user_data_from_excel():
+    # actor_id = request.args['actor_id']
+    # print(actor_id)
+    # print(dir(request))
+    dataFile = request.files['dataFile']
+
+    df = pd.read_excel(dataFile.stream)
+    print(df)
+    return {"key": "val"}
+
 
 def get_roles(user_id):
     if user_id == 'undefined':
