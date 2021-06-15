@@ -8,8 +8,11 @@ from url_bindings.actions import LogAction
 market_namespace = '/markets'
 
 def serialize(market, actor_id):
-    # market['id'] = str(market['_id'])
-    # del market['_id']
+    try:
+        market['id'] = str(market['_id'])
+        del market['_id']
+    except:
+        pass
     return set_privileges(market, actor_id, entity_type='market')
 
 def deserialize(market):
@@ -17,78 +20,67 @@ def deserialize(market):
     del market['id']
     return market
 
+DESIRED_KEYS = ['_id', 'mo', 'market_no', 'object', 'begin_date', 'deadline', 'end_date', 'def_caution', 'total_sum', 'trimester_sum', 'agents_number', 'owner', 'execution_site', 'cumulative_sum', 'payments', 'is_reconductible']
+
 @app.route(market_namespace, methods=['GET', 'POST', 'PUT'])
 def market_cr():
     actor_id = request.args['actor_id']
     if request.method == 'GET':
         market_list = [serialize(m, actor_id) for m in database['markets'].aggregate([
-            {"$addFields": {
-                'payments.sum': {"$arrayElemAt": [{"$map": {
-                    "input": "$payments",
-                    "as": "p",
-                    "in": {"$add": ["$$p.realization_sum", "$$p.billing_sum", "$$p.collected_sum"]}
-                }}, -1]},
-                'payments.left': {"$arrayElemAt": [{"$map": {
-                    "input": "$payments",
-                    "as": "p",
-                    "in": {"$subtract": ["$cumulative_sum",
-                                         {"$add": ["$$p.realization_sum", "$$p.billing_sum", "$$p.collected_sum"]}]}
-                }}, -1]},
-                'payments.left_this_year': {"$arrayElemAt": [{"$map": {
-                    "input": "$payments",
-                    "as": "p",
-                    "in": {"$subtract": ["$cumulative_sum", "$$p.collected_sum"]}
-                }}, -1]}
+            {"$project": {k: 1 for k in DESIRED_KEYS}},
 
+            {"$addFields": {
+                    "bilan": {"$map": {
+                        "input": "$payments",
+                        "as": "p",
+                        "in": {
+                            "realization_year": {"$year": {"$toDate": "$$p.realization_date"}},
+                            "billing_year": {"$year": {"$toDate": "$$p.billing_date"}}
+                        }
+                    }}
+                }},
+            {"$addFields": {
+                f"{f}_sum": {"$map": {
+                    "input": "$bilan",
+                    "as": "b",
+                    "in": {"$sum": {"$map": {
+                        "input": {"$filter": {
+                            "input": "$payments",
+                            "as": "f",
+                            "cond": {"$and": [
+                                {"$eq": ["$$b.realization_year", {"$year": {"$toDate": "$$f.realization_date"}}]},
+                                {"$eq": ["$$b.billing_year", {"$year": {"$toDate": "$$f.billing_date"}}]},
+                            ]}
+                        }},
+                        "as": "p",
+                        "in": f"$$p.{f}_sum"
+                    }}}
+                }}
+                for f in ['realization', 'billing']
             }},
             {"$addFields": {
-               "root": "$$ROOT"
+               "bilan": {"$map": {
+                   "input": {"$zip": {"inputs": ["$bilan.realization_year", "$realization_sum", "$bilan.billing_year", "$billing_sum"]}},
+                   "as": "z",
+                   "in": {
+                        "realization_year": {"$arrayElemAt": ["$$z", 0]},
+                        "realization_sum": {"$arrayElemAt": ["$$z", 1]},
+                        "billing_year": {"$arrayElemAt": ["$$z", 2]},
+                        "billing_sum": {"$arrayElemAt": ["$$z", 3]},
+                   }
+               }}
             }},
-            {"$group": {
-                "_id": {
-                    'id': {"$toString": '$_id'},
-                    'billing_year': {"$map": {
-                        "input": '$payments.billing_date',
-                        "as": "d",
-                        "in": {"$year": {"date": {"$toDate": "$$d"}}}
-                    }},
-                    'realization_year': {"$map": {
-                        "input": '$payments.realization_date',
-                        "as": "d",
-                        "in": {"$year": {"date": {"$toDate": "$$d"}}}
-                    }},
-                },
-                "realization_sum": {"$sum": {"$arrayElemAt": ["$payments.realization_sum", -1]}},
-                "billing_sum": {"$sum": {"$arrayElemAt": ["$payments.billing_sum", -1]}},
-                "collected_sum": {"$sum": {"$arrayElemAt": ["$payments.collected_sum", -1]}},
-                "root": {"$first": "$root"}
-            }},
+
             {"$project": {
-                "root": 1,
-                "total.realization_sum": "$realization_sum",
-                "total.billing_sum": "$billing_sum",
-                "total.collected_sum": "$collected_sum",
-
+                "id": {"$toString": "$_id"},
+                "_id": 0,
+                "root": "$$ROOT"
             }},
             {"$replaceRoot": {
                 "newRoot": {
-                    "$mergeObjects": ["$root", "$$ROOT"]
+                    "$mergeObjects": "$root"
                 }
-            }},
-            {"$replaceRoot": {
-                "newRoot": {
-                    "$mergeObjects": ["$_id", "$$ROOT"]
-                }
-            }},
-            {"$project": {
-                "root": 0,
-                "_id": 0
-            }},
-            {"$sort": {
-                "owner": -1
             }}
-
-
         ])]
         log = LogAction(actor_id, 'GET')
         log.make_statement('market', 'GET', single_element=False)
@@ -116,6 +108,7 @@ def market_ud(id):
     elif request.method == 'PUT':
         new_market = deserialize(request.get_json())
         database['markets'].update_one({'_id': ObjectId(id)}, {"$set": new_market})
+        print(new_market)
         log = LogAction(actor_id, 'PUT')
         log.make_statement('market', 'PUT', entity_id=id)
         log.insert()
