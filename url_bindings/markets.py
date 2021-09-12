@@ -35,7 +35,8 @@ def market_cr():
                         "as": "p",
                         "in": {
                             "realization_year": {"$year": {"$toDate": "$$p.realization_date"}},
-                            "billing_year": {"$year": {"$toDate": "$$p.billing_date"}}
+                            "billing_year": {"$year": {"$toDate": "$$p.billing_date"}},
+                            "collected_year": {"$year": {"$toDate": "$$p.collected_date"}},
                         }
                     }}
                 }},
@@ -50,23 +51,26 @@ def market_cr():
                             "cond": {"$and": [
                                 {"$eq": ["$$b.realization_year", {"$year": {"$toDate": "$$f.realization_date"}}]},
                                 {"$eq": ["$$b.billing_year", {"$year": {"$toDate": "$$f.billing_date"}}]},
+                                {"$eq": ["$$b.collected_year", {"$year": {"$toDate": "$$f.collected_date"}}]},
                             ]}
                         }},
                         "as": "p",
                         "in": f"$$p.{f}_sum"
                     }}}
                 }}
-                for f in ['realization', 'billing']
+                for f in ['realization', 'billing', 'collected']
             }},
             {"$addFields": {
                "bilan": {"$map": {
-                   "input": {"$zip": {"inputs": ["$bilan.realization_year", "$realization_sum", "$bilan.billing_year", "$billing_sum"]}},
+                   "input": {"$zip": {"inputs": ["$bilan.realization_year", "$realization_sum", "$bilan.billing_year", "$billing_sum", "$bilan.collected_year", "$collected_sum"]}},
                    "as": "z",
                    "in": {
                         "realization_year": {"$arrayElemAt": ["$$z", 0]},
                         "realization_sum": {"$arrayElemAt": ["$$z", 1]},
                         "billing_year": {"$arrayElemAt": ["$$z", 2]},
                         "billing_sum": {"$arrayElemAt": ["$$z", 3]},
+                        "collected_year": {"$arrayElemAt": ["$$z", 4]},
+                        "collected_sum": {"$arrayElemAt": ["$$z", 5]},
                    }
                }}
             }},

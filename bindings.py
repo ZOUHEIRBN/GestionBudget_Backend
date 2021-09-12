@@ -4,6 +4,8 @@ from flask_cors import CORS
 from pymongo import MongoClient
 
 #Loading Database
+import subprocess
+subprocess.Popen("mongod")
 client = MongoClient(port=27017)
 database = client["GestionBudget"]
 
