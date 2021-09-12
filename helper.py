@@ -1,6 +1,6 @@
 from bson import ObjectId
 from bindings import database
-import pandas as pd
+# import pandas as pd
 
 PRIVILEGES = ['view', 'list', 'edit', 'add', 'delete']
 ALL_CITIES = {city for cities in database['users'].aggregate([
