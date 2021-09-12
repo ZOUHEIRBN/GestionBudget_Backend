@@ -5,3 +5,4 @@ flask_socketio==4.3.0
 flask_cors==3.0.8
 pandas==0.25.3
 pdfkit
+gevent==21.8.0
