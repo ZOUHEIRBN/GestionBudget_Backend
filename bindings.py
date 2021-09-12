@@ -16,5 +16,10 @@ app = Flask(__name__, template_folder='./templates', static_folder='./static')
 CORS(app)
 socket_io = SocketIO(app, cors_allowed_origins="*")
 
+@app.route('/', methods=["GET"])
+def default_text():
+    return "Gestion Budget API"
+
+
 from url_bindings import markets, funds, users, charges, expenses, socket, summary
 from reporting import reporting
