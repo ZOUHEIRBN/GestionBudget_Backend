@@ -5,7 +5,7 @@ from pymongo import MongoClient
 
 #Loading Database
 import subprocess
-subprocess.Popen("mongod")
+# subprocess.Popen("mongod")
 client = MongoClient(port=27017)
 database = client["GestionBudget"]
 
