@@ -4,9 +4,24 @@ from flask_cors import CORS
 from pymongo import MongoClient
 
 #Loading Database
-import subprocess
-# subprocess.Popen("mongod")
-client = MongoClient(port=27017)
+mode = ""
+
+if mode == "DEV":
+    import subprocess
+    subprocess.Popen("mongod")
+    client = MongoClient(port=27017)
+
+else:
+    db_credentials = {
+        "password": "OMXklA8zUKGvDoEX",
+        "username": "bdg_admin",
+        "db_name": ""
+    }
+    database_address = f"mongodb+srv://{db_credentials['username']}:{db_credentials['password']}@gestionbudgetcluster.irghg.mongodb.net/{db_credentials['db_name']}?retryWrites=true&w=majority"
+
+    client = MongoClient(database_address)
+
+
 database = client["GestionBudget"]
 
 
