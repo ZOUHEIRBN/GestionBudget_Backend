@@ -30,6 +30,8 @@ app = Flask(__name__, template_folder='./templates', static_folder='./static')
 
 CORS(app)
 socket_io = SocketIO(app, cors_allowed_origins="*")
+socket_io.init_app(app, cors_allowed_origins="*")
+
 
 @app.route('/', methods=["GET"])
 def default_text():
