@@ -10,10 +10,10 @@ remote_data = MongoClient(database_address)["GestionBudget"]
 
 collections = local_data.list_collection_names()
 
-time.sleep(10)
+# time.sleep(10)
 for collection in collections[1:]:
     l = list(local_data[collection].find({}))
     print(f"Migrating collection: \"{collection.upper()}\"...", end='')
     remote_data[collection].insert_many(l)
-    time.sleep(2)
+    # time.sleep(2)
     print("Done")
