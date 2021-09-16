@@ -29,7 +29,7 @@ SERVER_URL = 'http://localhost:3000'
 app = Flask(__name__, template_folder='./templates', static_folder='./static')
 
 CORS(app)
-socket_io = SocketIO(app, cors_allowed_origins="*", async_mode='gevent_uwsgi')
+socket_io = SocketIO(app, cors_allowed_origins="*", async_mode='gevent')
 
 @app.after_request
 def after_request(response):
