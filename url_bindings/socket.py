@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from flask import request
+from flask_cors import cross_origin
 
 from bindings import socket_io
 
@@ -8,6 +9,7 @@ from url_bindings import actions
 
 ONLINE_USERS = {}
 @socket_io.on('disconnected')
+@cross_origin()
 def disconnect(user):
     u = user['user']
     try:
@@ -24,6 +26,7 @@ def disconnect(user):
 
 
 @socket_io.on('connected')
+@cross_origin()
 def connect(user):
     u = user['user']
     print(u.keys())

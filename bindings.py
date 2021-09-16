@@ -4,7 +4,7 @@ from flask_cors import CORS
 from pymongo import MongoClient
 
 #Loading Database
-mode = ""
+mode = "DEV"
 
 if mode == "DEV":
     import subprocess
