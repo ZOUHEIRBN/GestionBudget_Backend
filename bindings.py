@@ -32,6 +32,14 @@ CORS(app)
 socket_io = SocketIO(app, cors_allowed_origins="*")
 socket_io.init_app(app, cors_allowed_origins="*")
 
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers',
+                         'Origin, X-Requested-With, Content-Type, Accept, Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    response.headers.add('Access-Control-Allow-Credentials', 'false')
+    return response
 
 @app.route('/', methods=["GET"])
 def default_text():
